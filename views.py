@@ -32,12 +32,9 @@ class PersonWidget(QtWidgets.QWidget):
         self.model.select()
 
     def add_row(self):
-        names = []
         record = self.model.record()
-        for i in range(0, record.count()):
-            name = record.fieldName(i)
-            if name != "id":
-                names.append(name)
+
+        names = [record.fieldName(i) for i in range(0, record.count()) if record.fieldName(i) != "id"]
 
         values, ok = Dialog.get_row_data(names)
 
