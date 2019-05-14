@@ -49,40 +49,6 @@ class PersonWidget(QtWidgets.QWidget):
         self.model.insertRecord(-1, record)
         self.model.select()
 
-class ItemsWidget(QtWidgets.QWidget):
-    def __init__(self, parent=None):
-        super(ItemsWidget, self).__init__(parent)
-        lay = QtWidgets.QVBoxLayout(self)
-        view = QtWidgets.QTableView()
-        lay.addWidget(view)
-        model = QtSql.QSqlTableModel(self)
-        model.setTable("items")
-        model.select()
-        view.setModel(model)
-
-
-class NewTableWidget(QtWidgets.QWidget):
-    def __init__(self, parent=None):
-        super(NewTableWidget, self).__init__(parent)
-        self.lay = QtWidgets.QVBoxLayout(self)
-        self.table = QtWidgets.QTableWidget(self)
-        self.table.setColumnCount(5)
-        self.lay.addWidget(self.table)
-
-        add_column_button = QtWidgets.QPushButton('Добавить столбец')
-        add_column_button.clicked.connect(self.add_column)
-        self.lay.addWidget(add_column_button)
-
-        remove_column_button = QtWidgets.QPushButton('Удалить столбец')
-        remove_column_button.clicked.connect(self.remove_column)
-        self.lay.addWidget(remove_column_button)
-
-    def add_column(self):
-        self.table.setColumnCount(self.table.columnCount() + 1)
-
-    def remove_column(self):
-        self.table.setColumnCount(max(self.table.columnCount() - 1, 0))
-
 
 class Dialog(QtWidgets.QDialog):
 

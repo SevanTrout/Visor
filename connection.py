@@ -1,9 +1,9 @@
 from PyQt5 import QtWidgets, QtSql
 
 
-def createConnection():
+def create_connection():
     db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
-    db.setDatabaseName("test")
+    db.setDatabaseName("test.db")
     if not db.open():
         QtWidgets.QMessageBox.critical(None, "Cannot open database",
                                        "Unable to establish a database connection.\n"

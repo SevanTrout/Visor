@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets
 
-from SQLTest.connection import createConnection
-from SQLTest.views import PersonWidget, ItemsWidget, NewTableWidget
+from connection import create_connection
+from views import PersonWidget
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -16,16 +16,6 @@ class MainWindow(QtWidgets.QMainWindow):
         sub1.resize(800, 600)
         self.mdiarea.addSubWindow(sub1)
         sub1.show()
-        #
-        # sub2 = QtWidgets.QMdiSubWindow()
-        # sub2.setWidget(ItemsWidget())
-        # self.mdiarea.addSubWindow(sub2)
-        # sub2.show()
-
-        # sub3 = QtWidgets.QMdiSubWindow()
-        # sub3.setWidget(NewTableWidget())
-        # self.mdiarea.addSubWindow(sub3)
-        # sub3.show()
 
 
 if __name__ == '__main__':
@@ -33,7 +23,7 @@ if __name__ == '__main__':
 
     app = QtWidgets.QApplication(sys.argv)
 
-    if not createConnection():
+    if not create_connection():
         sys.exit(-1)
     w = MainWindow()
     w.show()
