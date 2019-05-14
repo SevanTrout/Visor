@@ -3,18 +3,18 @@ from PyQt5.QtWidgets import QVBoxLayout, QDialogButtonBox, QAbstractItemView
 
 
 class PersonWidget(QtWidgets.QWidget):
+    selectedIndex = None
+
     def __init__(self, parent=None):
         super(PersonWidget, self).__init__(parent)
         self.lay = QtWidgets.QVBoxLayout(self)
         self.table = QtWidgets.QTableView()
         self.lay.addWidget(self.table)
-        self.table.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.table.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.model = QtSql.QSqlTableModel(self)
         self.model.setTable("person")
         self.model.select()
         self.table.setModel(self.model)
-
-        self.selectedIndex = None
 
         add_row_button = QtWidgets.QPushButton('Добавить строку')
         add_row_button.clicked.connect(self.add_row)
@@ -25,13 +25,11 @@ class PersonWidget(QtWidgets.QWidget):
         self.lay.addWidget(remove_row_button)
 
     def remove_row(self):
-        selection = self.table.selectionModel().selectedIndexes()
+        selected_row_indexes = set(map(lambda item: item.row(), self.table.selectionModel().selectedIndexes()))
+        for selected_row_index in selected_row_indexes:
+            self.model.removeRow(selected_row_index)
 
-        if len(selection) > 0:
-            for selected_row in selection:
-                self.model.removeRow(selected_row.row())
-
-            self.model.select()
+        self.model.select()
 
     def add_row(self):
         names = []
