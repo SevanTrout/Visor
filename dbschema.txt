@@ -1,0 +1,64 @@
+Table Users {
+  id uuid [pk, unique]
+  full_name varchar [not null]
+  role_id int [not null]
+  password varchar [not null]
+}
+
+Table Roles {
+  id int [pk, unique]
+  name varchar [not null, unique]
+}
+
+Ref: Users.role_id > Roles.id
+
+Table Logs {
+  id uuid [pk, unique]
+  created_at datetime [not null]
+  user_id uuid [not null]
+  type int [not null]
+}
+
+Ref: Logs.user_id > Users.id
+
+Table Standart {
+  id int [pk]
+  name varchar [not null]
+  value decimal [not null]
+  unit_id int [not null]
+}
+Ref: Standart.unit_id > Units.id
+
+Table Units {
+  id int [pk]
+  name varchar [not null]
+  short_name varchar [not null]
+}
+
+Table Batch {
+  id int [pk]
+  created_at datetime [not null]
+  size int [not null]
+  user_id int [not null]
+  is_checked boolean [not null]
+}
+Ref: Batch.user_id > Users.id
+
+Table Results {
+  id uuid [pk]
+  value double [not null]
+  standart_id int [not null]
+  batch_id int [not null]
+  is_defect boolean [not null]
+  defect_value double
+  defect_id int
+}
+Ref: Results.batch_id > Batch.id
+Ref: Results.standart_id > Standart.id
+
+Table Defects {
+  id int [pk]
+  name varchar [not null]
+  type int [not null]
+}
+Ref: Results.defect_id > Defects.id

@@ -14,13 +14,59 @@ def create_connection():
         return False
 
     query = QtSql.QSqlQuery()
-    query.exec_("""CREATE TABLE IF NOT EXISTS person (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
-                                                     firstname VARCHAR(20), 
-                                                    lastname VARCHAR(20))""")
-    query.exec_("insert into person values(101, 'Danny', 'Young')")
-    query.exec_("insert into person values(102, 'Christine', 'Holand')")
-    query.exec_("insert into person values(103, 'Lars', 'Gordon')")
-    query.exec_("insert into person values(104, 'Roberto', 'Robitaille')")
-    query.exec_("insert into person values(105, 'Maria', 'Papadopoulos')")
+
+    query.exec_("""CREATE TABLE IF NOT EXISTS Roles(
+                  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                  name TEXT NOT NULL UNIQUE)""")
+
+    query.exec_("""CREATE TABLE IF NOT EXISTS Users(
+                    id BLOB PRIMARY KEY NOT NULL,
+                    fullname TEXT NOT NULL,
+                    password TEXT NOT NULL,
+                    role_id INTEGER NOT NULL,
+                    FOREIGN KEY (role_id) REFERENCES Roles (id))""")
+
+    query.exec_("""CREATE TABLE IF NOT EXISTS Logs(
+                    id BLOB PRIMARY KEY NOT NULL,
+                    created_at DATETIME NOT NULL,
+                    type INTEGER NOT NULL,
+                    user_id BLOB NOT NULL,
+                    FOREIGN KEY (user_id) REFERENCES Users (id))""")
+
+    query.exec_("""CREATE TABLE IF NOT EXISTS Units(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    name TEXT NOT NULL,
+                    short_name TEXT NOT NULL)""")
+
+    query.exec_("""CREATE TABLE IF NOT EXISTS Defects(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    name TEXT NOT NULL UNIQUE)""")
+
+    query.exec_("""CREATE TABLE IF NOT EXISTS Batches(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    created_at DATETIME NOT NULL,
+                    size INTEGER NOT NULL,
+                    is_checked BOOLEAN NOT NULL,
+                    user_id BLOB NOT NULL,
+                    FOREIGN KEY (user_id) REFERENCES Users (id))""")
+
+    query.exec_("""CREATE TABLE IF NOT EXISTS Standarts(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    name TEXT NOT NULL UNIQUE,
+                    value DOUBLE NOT NULL,
+                    unit_id INTEGER NOT NULL,
+                    FOREIGN KEY (unit_id) REFERENCES Units (id))""")
+
+    query.exec_("""CREATE TABLE IF NOT EXISTS Results(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NUll,
+                    value DOUBLE NOT NULL,
+                    is_defect BOOLEAN,
+                    defect_value DOUBLE,
+                    defect_id INTEGER,
+                    standart_id INTEGER NOT NULL,
+                    batch_id INTEGER NOT NULL,
+                    FOREIGN KEY (defect_id) REFERENCES Defects (id),
+                    FOREIGN KEY (standart_id) REFERENCES Standarts (id),
+                    FOREIGN KEY (batch_id) REFERENCES Batches (id))""")
 
     return True

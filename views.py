@@ -12,7 +12,7 @@ class PersonWidget(QtWidgets.QWidget):
         self.lay.addWidget(self.table)
         self.table.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.model = QtSql.QSqlTableModel(self)
-        self.model.setTable("person")
+        self.model.setTable("Roles")
         self.model.select()
         self.table.setModel(self.model)
 
