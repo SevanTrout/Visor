@@ -22,6 +22,7 @@ def create_connection():
     query.exec_("""CREATE TABLE IF NOT EXISTS Users(
                     id BLOB PRIMARY KEY NOT NULL,
                     fullname TEXT NOT NULL,
+                    login TEXT NOT NULL UNIQUE,
                     password TEXT NOT NULL,
                     role_id INTEGER NOT NULL,
                     FOREIGN KEY (role_id) REFERENCES Roles (id))""")
