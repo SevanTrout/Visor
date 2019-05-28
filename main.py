@@ -5,6 +5,8 @@ from Models.user import User
 from connection import create_connection
 from views import PersonWidget
 
+from hashlib import md5
+
 
 class Login(QtWidgets.QDialog):
     def __init__(self, parent=None):
@@ -43,13 +45,14 @@ class Login(QtWidgets.QDialog):
             QtWidgets.QMessageBox.warning(
                 self, 'Внимание!', 'Введите имя пользователя и пароль!')
 
+        password_hash = md5(password.encode()).hexdigest()
         query = QtSql.QSqlQuery()
         query.exec_(
-            "SELECT * FROM Users WHERE login = '{0}' AND password = '{1}'".format(login, password))
+            "SELECT * FROM Users WHERE login = '{0}' AND password_hash = '{1}'".format(login, password_hash))
 
         if query.isActive():
             query.first()
-            if query.isValid() and query.value('login') == login and query.value('password') == password:
+            if query.isValid():
                 self.user = User(fullname=query.value('fullname'),
                                  login=query.value('login'),
                                  role_id=query.value('role_id'))

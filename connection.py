@@ -23,7 +23,7 @@ def create_connection():
                    id BLOB PRIMARY KEY NOT NULL,
                    fullname TEXT NOT NULL,
                    login TEXT NOT NULL UNIQUE,
-                   password TEXT NOT NULL,
+                   password_hash TEXT NOT NULL,
                    role_id INTEGER NOT NULL,
                    FOREIGN KEY (role_id) REFERENCES Roles (id))""")
 
@@ -74,8 +74,8 @@ def create_connection():
                    SELECT 1, 'Admin' 
                    WHERE NOT EXISTS(SELECT 1 FROM Roles WHERE id = 1 AND name = 'Admin')""")
 
-    query.exec_("""INSERT INTO Users(id,fullname,login,password,role_id) 
-                   SELECT 1, 'Admin', 'admin', 'admin', 1 
+    query.exec_("""INSERT INTO Users(id,fullname,login,password_hash,role_id) 
+                   SELECT 1, 'Admin', 'admin', '21232f297a57a5a743894a0e4a801fc3', 1 
                    WHERE NOT EXISTS(SELECT 1 FROM Users WHERE id = 1 AND login = 'admin')""")
 
     return True
