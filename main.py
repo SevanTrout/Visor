@@ -97,9 +97,9 @@ if __name__ == '__main__':
     if not create_connection():
         sys.exit(-1)
 
-    login = Login()
+    login_window = Login()
 
-    if login.exec_() == QtWidgets.QDialog.Accepted:
-        w = MainWindow(user=login.user)
+    if login_window.exec_() == QtWidgets.QDialog.Accepted:
+        w = MainWindow(user=login_window.user)
         w.show()
         sys.exit(app.exec_())
