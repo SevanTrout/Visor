@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtSql
 from PyQt5.QtWidgets import QGroupBox, QFormLayout, QLabel
 
+from Models.user import User
 from connection import create_connection
 from views import PersonWidget
 
@@ -8,6 +9,8 @@ from views import PersonWidget
 class Login(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(Login, self).__init__(parent)
+        self.user = None
+
         self.setWindowTitle("Авторизация")
 
         self.formGroupBox = QGroupBox()
@@ -47,16 +50,32 @@ class Login(QtWidgets.QDialog):
         if query.isActive():
             query.first()
             if query.isValid() and query.value('login') == login and query.value('password') == password:
+                self.user = User(fullname=query.value('fullname'),
+                                 login=query.value('login'),
+                                 role_id=query.value('role_id'))
                 self.accept()
             else:
+                self.login.clear()
+                self.password.clear()
                 QtWidgets.QMessageBox.warning(self, 'Внимание!', 'Неверное имя пользователя или пароль!')
         else:
             QtWidgets.QMessageBox.warning(self, 'Ошибка!', 'Произошла неизвестная ошибка, попробуйте снова')
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, user=None):
         super(MainWindow, self).__init__(parent)
+        self.user = user
+
+        self.setWindowTitle("Visor. Сессия пользователя {0}".format(
+            user.fullname if user is not None else 'Неизвестный пользователь'))
+
+        bar = self.menuBar()
+        conveyor = bar.addMenu("&Конвейер")
+        if user.is_operator():
+            settings = bar.addMenu("&Настройки")
+        if user.is_admin():
+            admin = bar.addMenu("&Администрирование")
 
         self.mdiarea = QtWidgets.QMdiArea()
         self.setCentralWidget(self.mdiarea)
@@ -78,6 +97,6 @@ if __name__ == '__main__':
     login = Login()
 
     if login.exec_() == QtWidgets.QDialog.Accepted:
-        w = MainWindow()
+        w = MainWindow(user=login.user)
         w.show()
         sys.exit(app.exec_())
