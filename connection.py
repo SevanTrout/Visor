@@ -39,10 +39,6 @@ def create_connection():
                    name TEXT NOT NULL,
                    short_name TEXT NOT NULL)""")
 
-    query.exec_("""CREATE TABLE IF NOT EXISTS Defects(
-                   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                   name TEXT NOT NULL UNIQUE)""")
-
     query.exec_("""CREATE TABLE IF NOT EXISTS Batches(
                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                    created_at DATETIME NOT NULL,
@@ -89,11 +85,15 @@ def create_connection():
                        FOREIGN KEY (report_id) REFERENCES Reports (id))""")
 
     query.exec_("""INSERT INTO Roles(id,name) 
-                   SELECT 1, 'Admin' 
-                   WHERE NOT EXISTS(SELECT 1 FROM Roles WHERE id = 1 AND name = 'Admin')""")
+                   SELECT 1, 'Администратор' 
+                   WHERE NOT EXISTS(SELECT 1 FROM Roles WHERE id = 1 AND name = 'Администратор')""")
 
     query.exec_("""INSERT INTO Users(id,fullname,login,password_hash,role_id) 
                    SELECT 1, 'Admin', 'admin', '21232f297a57a5a743894a0e4a801fc3', 1 
                    WHERE NOT EXISTS(SELECT 1 FROM Users WHERE id = 1 AND login = 'admin')""")
+
+    query.exec_("""INSERT INTO Units(id, name, short_name)
+                   SELECT 1, 'миллиметр', 'мм'
+                   WHERE NOT EXISTS(SELECT 1 FROM Units WHERE id = 1)""")
 
     return True
