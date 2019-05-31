@@ -53,7 +53,7 @@ class Login(QtWidgets.QDialog):
         if query.isActive():
             query.first()
             if query.isValid():
-                self.user = User(id=query.value('id'),
+                self.user = User(user_id=query.value('id'),
                                  fullname=query.value('fullname'),
                                  login=query.value('login'),
                                  role_id=query.value('role_id'))

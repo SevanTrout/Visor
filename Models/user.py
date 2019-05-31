@@ -1,6 +1,6 @@
 class User:
-    def __init__(self, id=None, fullname=None, login=None, role_id=None):
-        self._id = id
+    def __init__(self, user_id=None, fullname=None, login=None, role_id=None):
+        self._id = user_id
         self._fullname = fullname
         self._login = login
         self._role_id = role_id
