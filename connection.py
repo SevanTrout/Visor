@@ -54,7 +54,8 @@ def create_connection():
     query.exec_("""CREATE TABLE IF NOT EXISTS Standarts(
                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                    name TEXT NOT NULL UNIQUE,
-                   value DOUBLE NOT NULL,
+                   min_value DOUBLE NOT NULL,
+                   max_value DOUBLE NOT NULL,
                    unit_id INTEGER NOT NULL,
                    FOREIGN KEY (unit_id) REFERENCES Units (id))""")
 
@@ -69,6 +70,23 @@ def create_connection():
                    FOREIGN KEY (defect_id) REFERENCES Defects (id),
                    FOREIGN KEY (standart_id) REFERENCES Standarts (id),
                    FOREIGN KEY (batch_id) REFERENCES Batches (id))""")
+
+    query.exec_("""CREATE TABLE IF NOT EXISTS Recommendations(
+                   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NUll,
+                   description TEXT NOT NULL )
+                   """)
+
+    query.exec_("""CREATE TABLE IF NOT EXISTS Reports(
+                       id INTEGER PRIMARY KEY AUTOINCREMENT NOT NUll,
+                       result TEXT NOT NULL,
+                       batch_id INTEGER NOT NULL,
+                       FOREIGN KEY (batch_id) REFERENCES Batches (id))""")
+
+    query.exec_("""CREATE TABLE IF NOT EXISTS ReportsToRecommendations(
+                       recommendation_id INTEGER NOT NUll,
+                       report_id INTEGER NOT NUll,
+                       FOREIGN KEY (recommendation_id) REFERENCES Recommendations (id),
+                       FOREIGN KEY (report_id) REFERENCES Reports (id))""")
 
     query.exec_("""INSERT INTO Roles(id,name) 
                    SELECT 1, 'Admin' 
