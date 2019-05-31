@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtSql, QtCore
-from PyQt5.QtWidgets import QVBoxLayout, QDialogButtonBox, QAbstractItemView
+from PyQt5.QtGui import QIntValidator
+from PyQt5.QtWidgets import QVBoxLayout, QDialogButtonBox, QAbstractItemView, QGroupBox, QFormLayout, QLabel
 
 
 class PersonWidget(QtWidgets.QWidget):
@@ -36,7 +37,7 @@ class PersonWidget(QtWidgets.QWidget):
 
         names = [record.fieldName(i) for i in range(0, record.count()) if record.fieldName(i) != "id"]
 
-        values, ok = Dialog.get_row_data(names)
+        values, ok = AddRowDialog.get_row_data(names)
 
         for index, value in enumerate(values):
             record.setValue(index + 1, value)
@@ -45,10 +46,10 @@ class PersonWidget(QtWidgets.QWidget):
         self.model.select()
 
 
-class Dialog(QtWidgets.QDialog):
+class AddRowDialog(QtWidgets.QDialog):
 
     def __init__(self, names, parent=None):
-        super(Dialog, self).__init__(parent)
+        super(AddRowDialog, self).__init__(parent)
 
         self.names = names
         self.resize(300, 200)
@@ -73,6 +74,38 @@ class Dialog(QtWidgets.QDialog):
 
     @staticmethod
     def get_row_data(names, parent=None):
-        dialog = Dialog(names, parent)
+        dialog = AddRowDialog(names, parent)
         result = dialog.exec_()
         return list(map(lambda line: line.text(), dialog.lines)), result == QtWidgets.QDialog.Accepted
+
+
+class CreateBatchDialog(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        super(CreateBatchDialog, self).__init__(parent)
+
+        self.resize(600, 400)
+
+        self.setWindowTitle("Создание партии")
+
+        self.formGroupBox = QGroupBox()
+        form_layout = QFormLayout()
+
+        self.size = QtWidgets.QSpinBox(self)
+        self.size.setRange(1, 80)
+        self.size.setValue(80)
+        form_layout.addRow(QLabel("Размер партии:"), self.size)
+
+        self.formGroupBox.setLayout(form_layout)
+
+        self.createBatchButton = QtWidgets.QPushButton('Создать', self)
+        self.createBatchButton.clicked.connect(self.accept)
+
+        main_layout = QtWidgets.QVBoxLayout(self)
+
+        main_layout.addWidget(self.formGroupBox)
+        main_layout.addWidget(self.createBatchButton)
+
+        self.setLayout(main_layout)
+
+    def get_size(self):
+        return self.size.text()

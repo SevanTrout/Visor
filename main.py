@@ -1,11 +1,11 @@
+from hashlib import md5
+
 from PyQt5 import QtWidgets, QtSql
 from PyQt5.QtWidgets import QGroupBox, QFormLayout, QLabel
 
 from Models.user import User
 from connection import create_connection
-from views import PersonWidget
-
-from hashlib import md5
+from views import PersonWidget, CreateBatchDialog
 
 
 class Login(QtWidgets.QDialog):
@@ -53,7 +53,8 @@ class Login(QtWidgets.QDialog):
         if query.isActive():
             query.first()
             if query.isValid():
-                self.user = User(fullname=query.value('fullname'),
+                self.user = User(id=query.value('id'),
+                                 fullname=query.value('fullname'),
                                  login=query.value('login'),
                                  role_id=query.value('role_id'))
                 self.accept()
@@ -75,10 +76,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
         bar = self.menuBar()
         conveyor = bar.addMenu("&Конвейер")
+        create_batch_action = conveyor.addAction("&Создать партию")
+        create_batch_action.triggered.connect(self.create_batch)
+
+        load_data_action = conveyor.addAction("&Загрузить данные")
+        load_data_action.triggered.connect(self.load_data)
+
         if user.is_operator():
             settings = bar.addMenu("&Настройки")
+
         if user.is_admin():
             admin = bar.addMenu("&Администрирование")
+
+            create_user_action = admin.addAction("&Добавить пользователя")
+            create_user_action.triggered.connect(self.create_user)
 
         self.mdiarea = QtWidgets.QMdiArea()
         self.setCentralWidget(self.mdiarea)
@@ -88,6 +99,25 @@ class MainWindow(QtWidgets.QMainWindow):
         sub1.resize(800, 600)
         self.mdiarea.addSubWindow(sub1)
         sub1.show()
+
+    def create_batch(self):
+        create_batch_dialog = CreateBatchDialog()
+        if create_batch_dialog.exec_():
+            try:
+                size = int(create_batch_dialog.get_size())
+
+                if size < 1 or size > 80:
+                    raise ValueError()
+
+            except ValueError:
+                QtWidgets.QMessageBox.warning(self, 'Внимание!',
+                                              'Указано недопустимое значение параметра "Рамер партии"!')
+
+    def create_user(self):
+        print("User")
+
+    def load_data(self):
+        print("Load")
 
 
 if __name__ == '__main__':

@@ -1,12 +1,18 @@
 class User:
-    def __init__(self, fullname=None, login=None, role_id=None):
+    def __init__(self, id=None, fullname=None, login=None, role_id=None):
+        self._id = id
         self._fullname = fullname
         self._login = login
         self._role_id = role_id
 
+    id = property()
     fullname = property()
     login = property()
     role_id = property()
+
+    @id.getter
+    def id(self):
+        return self._id
 
     @fullname.getter
     def fullname(self):
