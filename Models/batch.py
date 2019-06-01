@@ -2,12 +2,15 @@ from datetime import datetime
 
 
 class Batch:
-    def __init__(self, size=None, created_at=None, is_checked=None, user_id=None):
+
+    def __init__(self, batch_id=None, size=None, created_at=None, is_checked=None, user_id=None):
+        self._id = batch_id
         self._size = size
         self._created_at = created_at
         self._is_checked = is_checked
         self._user_id = user_id
 
+    id = property()
     size = property()
     created_at = property()
     is_checked = property()
@@ -33,3 +36,11 @@ class Batch:
     @iso_created_at.getter
     def iso_created_at(self):
         return datetime.isoformat(self._created_at, sep='Z', timespec='milliseconds')
+
+    @id.getter
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        self._id = int(value)

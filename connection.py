@@ -58,12 +58,9 @@ def create_connection():
     query.exec_("""CREATE TABLE IF NOT EXISTS Results(
                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NUll,
                    value DOUBLE NOT NULL,
-                   is_defect BOOLEAN,
-                   defect_value DOUBLE,
-                   defect_id INTEGER,
                    standart_id INTEGER NOT NULL,
                    batch_id INTEGER NOT NULL,
-                   FOREIGN KEY (defect_id) REFERENCES Defects (id),
+                   unit_id INTEGER NOT NULL,
                    FOREIGN KEY (standart_id) REFERENCES Standarts (id),
                    FOREIGN KEY (batch_id) REFERENCES Batches (id))""")
 
