@@ -1,8 +1,10 @@
+import datetime
 from hashlib import md5
 
 from PyQt5 import QtWidgets, QtSql
 from PyQt5.QtWidgets import QGroupBox, QFormLayout, QLabel
 
+from Models.batch import Batch
 from Models.user import User
 from connection import create_connection
 from views import PersonWidget, CreateBatchDialog
@@ -112,6 +114,17 @@ class MainWindow(QtWidgets.QMainWindow):
             except ValueError:
                 QtWidgets.QMessageBox.warning(self, 'Внимание!',
                                               'Указано недопустимое значение параметра "Рамер партии"!')
+
+            batch = Batch(user_id=self.user.id, size=size, created_at=datetime.datetime.utcnow(), is_checked=False)
+            query = QtSql.QSqlQuery()
+            query_body = """INSERT INTO Batches(size, user_id, created_at, is_checked) 
+                            VALUES({batch.size}, {batch.user_id}, '{batch.iso_created_at}', {batch.is_checked})"""\
+                .format(batch=batch)
+
+            query.exec_(query_body)
+
+            if not (query.isActive()):
+                print("Error")
 
     def create_user(self):
         print("User")
