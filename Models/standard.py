@@ -1,6 +1,6 @@
-class Standart:
-    def __init__(self, standart_id=None, name=None, min_value=None, max_value=None, unit_id=None):
-        self._id = standart_id
+class Standard:
+    def __init__(self, standard_id=None, name=None, min_value=None, max_value=None, unit_id=None):
+        self._id = standard_id
         self._name = name
         self._min_value = min_value
         self._max_value = max_value

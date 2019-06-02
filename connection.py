@@ -47,7 +47,7 @@ def create_connection():
                    user_id BLOB NOT NULL,
                    FOREIGN KEY (user_id) REFERENCES Users (id))""")
 
-    query.exec_("""CREATE TABLE IF NOT EXISTS Standarts(
+    query.exec_("""CREATE TABLE IF NOT EXISTS Standards(
                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                    name TEXT NOT NULL UNIQUE,
                    min_value DOUBLE NOT NULL,
@@ -58,10 +58,10 @@ def create_connection():
     query.exec_("""CREATE TABLE IF NOT EXISTS Results(
                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NUll,
                    value DOUBLE NOT NULL,
-                   standart_id INTEGER NOT NULL,
+                   standard_id INTEGER NOT NULL,
                    batch_id INTEGER NOT NULL,
                    unit_id INTEGER NOT NULL,
-                   FOREIGN KEY (standart_id) REFERENCES Standarts (id),
+                   FOREIGN KEY (standard_id) REFERENCES Standards (id),
                    FOREIGN KEY (batch_id) REFERENCES Batches (id))""")
 
     query.exec_("""CREATE TABLE IF NOT EXISTS Recommendations(

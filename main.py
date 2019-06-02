@@ -7,10 +7,10 @@ from PyQt5 import QtWidgets, QtSql
 from PyQt5.QtWidgets import QGroupBox, QFormLayout, QLabel
 
 from Models.batch import Batch
-from Models.standart import Standart
+from Models.standard import Standard
 from Models.user import User
 from connection import create_connection
-from views import PersonWidget, CreateBatchDialog
+from views import StandardsTableWidget, CreateBatchDialog
 
 
 class Login(QtWidgets.QDialog):
@@ -101,8 +101,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.mdiarea)
 
         sub1 = QtWidgets.QMdiSubWindow()
-        sub1.setWidget(PersonWidget())
-        sub1.resize(800, 600)
+        sub1.setWidget(StandardsTableWidget())
+        sub1.resize(1024, 600)
         self.mdiarea.addSubWindow(sub1)
         sub1.show()
 
@@ -137,23 +137,23 @@ class MainWindow(QtWidgets.QMainWindow):
                 query.first()
                 batch.id = query.value(0)
 
-            if query.exec_("""SELECT id, min_value, max_value, unit_id FROM Standarts"""):
+            if query.exec_("""SELECT id, min_value, max_value, unit_id FROM Standards"""):
                 while query.next():
-                    standart = Standart(standart_id=query.value(0),
+                    standard = Standard(standard_id=query.value(0),
                                         min_value=query.value(1),
                                         max_value=query.value(2),
                                         unit_id=query.value(3))
                     for _ in range(batch.size):
                         result_query = QtSql.QSqlQuery()
-                        result_query.prepare("""INSERT INTO Results(value, standart_id, batch_id, unit_id)
-                                   VALUES(:value, :standart_id, :batch_id, :unit_id)""")
+                        result_query.prepare("""INSERT INTO Results(value, standard_id, batch_id, unit_id)
+                                   VALUES(:value, :standard_id, :batch_id, :unit_id)""")
 
-                        result_value = round(gauss(round(mean([standart.min_value, standart.max_value]), 4),
-                                                   round(standart.max_value - standart.min_value, 4) / 4), 4)
+                        result_value = round(gauss(round(mean([standard.min_value, standard.max_value]), 4),
+                                                   round(standard.max_value - standard.min_value, 4) / 4), 4)
                         result_query.bindValue(':value', result_value)
-                        result_query.bindValue(':standart_id', standart.id)
+                        result_query.bindValue(':standard_id', standard.id)
                         result_query.bindValue(':batch_id', batch.id)
-                        result_query.bindValue(':unit_id', standart.unit_id)
+                        result_query.bindValue(':unit_id', standard.unit_id)
 
                         if not (result_query.exec_()):
                             QtWidgets.QMessageBox.warning(self, 'Ошибка!',
