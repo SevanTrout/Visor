@@ -1,6 +1,15 @@
+import datetime
+from _md5 import md5
+from random import gauss
+from statistics import mean
+
 from PyQt5 import QtWidgets, QtSql, QtCore
 from PyQt5.QtWidgets import QVBoxLayout, QDialogButtonBox, QAbstractItemView, QGroupBox, QFormLayout, QLabel, \
     QHeaderView
+
+from Models.batch import Batch
+from Models.standard import Standard
+from Models.user import User
 
 
 class StandardsTableWidget(QtWidgets.QWidget):
@@ -27,34 +36,6 @@ class StandardsTableWidget(QtWidgets.QWidget):
 
         self.table.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-
-        add_row_button = QtWidgets.QPushButton('Добавить строку')
-        add_row_button.clicked.connect(self.add_row)
-        self.lay.addWidget(add_row_button)
-
-        remove_row_button = QtWidgets.QPushButton('Удалить выбранные строки')
-        remove_row_button.clicked.connect(self.remove_row)
-        self.lay.addWidget(remove_row_button)
-
-    def remove_row(self):
-        selected_row_indexes = set(map(lambda item: item.row(), self.table.selectionModel().selectedIndexes()))
-        for selected_row_index in selected_row_indexes:
-            self.model.removeRow(selected_row_index)
-
-        self.model.select()
-
-    def add_row(self):
-        record = self.model.record()
-
-        names = [record.fieldName(i) for i in range(0, record.count()) if record.fieldName(i) != "id"]
-
-        values, ok = AddRowDialog.get_row_data(names)
-
-        for index, value in enumerate(values):
-            record.setValue(index + 1, value)
-
-        self.model.insertRecord(-1, record)
-        self.model.select()
 
 
 class AddRowDialog(QtWidgets.QDialog):
@@ -91,7 +72,9 @@ class AddRowDialog(QtWidgets.QDialog):
 
 
 class CreateBatchDialog(QtWidgets.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, user=None):
+        self.user = user
+
         super(CreateBatchDialog, self).__init__(parent)
 
         self.resize(600, 400)
@@ -109,7 +92,7 @@ class CreateBatchDialog(QtWidgets.QDialog):
         self.formGroupBox.setLayout(form_layout)
 
         self.createBatchButton = QtWidgets.QPushButton('Создать', self)
-        self.createBatchButton.clicked.connect(self.accept)
+        self.createBatchButton.clicked.connect(self.create_batch)
 
         main_layout = QtWidgets.QVBoxLayout(self)
 
@@ -118,5 +101,115 @@ class CreateBatchDialog(QtWidgets.QDialog):
 
         self.setLayout(main_layout)
 
-    def get_size(self):
-        return self.size.text()
+    def create_batch(self):
+
+        try:
+            size = int(self.size.text())
+
+            if size < 1 or size > 80:
+                raise ValueError()
+
+        except ValueError:
+            QtWidgets.QMessageBox.warning(self, 'Внимание!',
+                                          'Указано недопустимое значение параметра "Рамер партии"!')
+
+        batch: Batch = Batch(user_id=self.user.id, size=size, created_at=datetime.datetime.utcnow(),
+                             is_checked=False)
+        query = QtSql.QSqlQuery()
+        query.prepare("""INSERT INTO Batches(size, user_id, created_at, is_checked)
+                            VALUES(:size, :user_id, :created_at, :is_checked)""")
+        query.bindValue(":size", batch.size)
+        query.bindValue(":user_id", batch.user_id)
+        query.bindValue(":created_at", batch.iso_created_at)
+        query.bindValue(":is_checked", batch.is_checked)
+
+        if not query.exec_():
+            print("Error")
+
+        query.exec_("""SELECT max(id) FROM Batches""")
+        if query.isActive():
+            query.first()
+            batch.id = query.value(0)
+
+        if query.exec_("""SELECT id, min_value, max_value, unit_id FROM Standards"""):
+            while query.next():
+                standard = Standard(standard_id=query.value(0),
+                                    min_value=query.value(1),
+                                    max_value=query.value(2),
+                                    unit_id=query.value(3))
+                for _ in range(batch.size):                  
+                    result_query = QtSql.QSqlQuery()
+                    result_query.prepare("""INSERT INTO Results(value, standard_id, batch_id, unit_id)
+                                   VALUES(:value, :standard_id, :batch_id, :unit_id)""")
+
+                    result_value = round(gauss(round(mean([standard.min_value, standard.max_value]), 4),
+                                               round(standard.max_value - standard.min_value, 4) / 4), 4)
+                    result_query.bindValue(':value', result_value)
+                    result_query.bindValue(':standard_id', standard.id)
+                    result_query.bindValue(':batch_id', batch.id)
+                    result_query.bindValue(':unit_id', standard.unit_id)
+
+                    if not (result_query.exec_()):
+                        QtWidgets.QMessageBox.warning(self, 'Ошибка!',
+                                                      'Произошла неизвестная ошибка, попробуйте снова')
+
+        self.accept()
+
+
+class Login(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        super(Login, self).__init__(parent)
+        self.user = None
+
+        self.setWindowTitle("Авторизация")
+
+        self.formGroupBox = QGroupBox()
+        form_layout = QFormLayout()
+
+        self.login = QtWidgets.QLineEdit(self)
+        form_layout.addRow(QLabel("Имя пользователя:"), self.login)
+
+        self.password = QtWidgets.QLineEdit(self)
+        self.password.setEchoMode(QtWidgets.QLineEdit.Password)
+        form_layout.addRow(QLabel("Пароль:"), self.password)
+
+        self.formGroupBox.setLayout(form_layout)
+
+        self.buttonLogin = QtWidgets.QPushButton('Войти', self)
+        self.buttonLogin.clicked.connect(self.handle_login)
+
+        main_layout = QtWidgets.QVBoxLayout(self)
+
+        main_layout.addWidget(self.formGroupBox)
+        main_layout.addWidget(self.buttonLogin)
+
+        self.setLayout(main_layout)
+
+    def handle_login(self):
+        login = self.login.text()
+        password = self.password.text()
+
+        if login == '' or password == '':
+            QtWidgets.QMessageBox.warning(
+                self, 'Внимание!', 'Введите имя пользователя и пароль!')
+            return
+
+        password_hash = md5(password.encode()).hexdigest()
+        query = QtSql.QSqlQuery()
+        query.exec_(
+            "SELECT * FROM Users WHERE login = '{0}' AND password_hash = '{1}'".format(login, password_hash))
+
+        if query.isActive():
+            query.first()
+            if query.isValid():
+                self.user = User(user_id=query.value('id'),
+                                 fullname=query.value('fullname'),
+                                 login=query.value('login'),
+                                 role_id=query.value('role_id'))
+                self.accept()
+            else:
+                self.login.clear()
+                self.password.clear()
+                QtWidgets.QMessageBox.warning(self, 'Внимание!', 'Неверное имя пользователя или пароль!')
+        else:
+            QtWidgets.QMessageBox.warning(self, 'Ошибка!', 'Произошла неизвестная ошибка, попробуйте снова')
