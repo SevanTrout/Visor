@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QDialogButtonBox, QAbstractItemView, QG
 
 from Models.batch import Batch
 from Models.user import User
+from report_creater import ReportCreater
 
 
 class StandardsTableWidget(QtWidgets.QWidget):
@@ -199,6 +200,7 @@ class Login(QtWidgets.QDialog):
 class BatchesListWidget(QtWidgets.QListView):
     def __init__(self, parent=None):
         selected_checked_item = None
+        selected_item_index = None
 
         super(BatchesListWidget, self).__init__(parent)
 
@@ -216,17 +218,17 @@ class BatchesListWidget(QtWidgets.QListView):
         self.list.clicked.connect(self.item_clicked)
 
         batches_query = QtSql.QSqlQuery()
-        batches = []
+        self.batches = []
 
         if batches_query.exec_("""SELECT * FROM Batches"""):
             while batches_query.next():
-                batches.append(Batch(batch_id=batches_query.value(0),
-                                     created_at=dateutil.parser.parse(batches_query.value(1)),
-                                     size=batches_query.value(2),
-                                     is_checked=batches_query.value(3),
-                                     user_id=batches_query.value(4)))
+                self.batches.append(Batch(batch_id=batches_query.value(0),
+                                          created_at=dateutil.parser.parse(batches_query.value(1)),
+                                          size=batches_query.value(2),
+                                          is_checked=batches_query.value(3),
+                                          user_id=batches_query.value(4)))
 
-        for batch in batches:
+        for batch in self.batches:
             batch_name = "Партия от {0} размером {1} патронов".format(batch.iso_created_at, batch.size)
             item = QStandardItem(batch_name)
 
@@ -237,10 +239,12 @@ class BatchesListWidget(QtWidgets.QListView):
         self.list.setModel(self.model)
 
     def button_action(self):
-        print(self.list.selectedIndexes())
-        pass
+
+        reporter = ReportCreater(self.batches[self.selected_item_index].id)
+        reporter.create_report()
 
     def item_clicked(self, item):
-        self.selected_checked_item = self.model.item(item.row(), 0).checkState() == 1
-        
+        self.selected_item_index = item.row()
+        self.selected_checked_item = self.model.item(self.selected_item_index, 0).checkState() == 1
+
         self.action_button.setText('Показать отчёт' if self.selected_checked_item else 'Создать отчёт')
