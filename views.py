@@ -1,14 +1,11 @@
 import datetime
 from _md5 import md5
-from random import gauss
-from statistics import mean
 
 from PyQt5 import QtWidgets, QtSql, QtCore
 from PyQt5.QtWidgets import QVBoxLayout, QDialogButtonBox, QAbstractItemView, QGroupBox, QFormLayout, QLabel, \
     QHeaderView
 
 from Models.batch import Batch
-from Models.standard import Standard
 from Models.user import User
 
 
@@ -74,6 +71,7 @@ class AddRowDialog(QtWidgets.QDialog):
 class CreateBatchDialog(QtWidgets.QDialog):
     def __init__(self, parent=None, user=None):
         self.user = user
+        self.batch = None
 
         super(CreateBatchDialog, self).__init__(parent)
 
@@ -113,15 +111,15 @@ class CreateBatchDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.warning(self, 'Внимание!',
                                           'Указано недопустимое значение параметра "Рамер партии"!')
 
-        batch: Batch = Batch(user_id=self.user.id, size=size, created_at=datetime.datetime.utcnow(),
-                             is_checked=False)
+        self.batch: Batch = Batch(user_id=self.user.id, size=size, created_at=datetime.datetime.utcnow(),
+                                  is_checked=False)
         query = QtSql.QSqlQuery()
         query.prepare("""INSERT INTO Batches(size, user_id, created_at, is_checked)
                             VALUES(:size, :user_id, :created_at, :is_checked)""")
-        query.bindValue(":size", batch.size)
-        query.bindValue(":user_id", batch.user_id)
-        query.bindValue(":created_at", batch.iso_created_at)
-        query.bindValue(":is_checked", batch.is_checked)
+        query.bindValue(":size", self.batch.size)
+        query.bindValue(":user_id", self.batch.user_id)
+        query.bindValue(":created_at", self.batch.iso_created_at)
+        query.bindValue(":is_checked", self.batch.is_checked)
 
         if not query.exec_():
             print("Error")
@@ -129,31 +127,12 @@ class CreateBatchDialog(QtWidgets.QDialog):
         query.exec_("""SELECT max(id) FROM Batches""")
         if query.isActive():
             query.first()
-            batch.id = query.value(0)
-
-        if query.exec_("""SELECT id, min_value, max_value, unit_id FROM Standards"""):
-            while query.next():
-                standard = Standard(standard_id=query.value(0),
-                                    min_value=query.value(1),
-                                    max_value=query.value(2),
-                                    unit_id=query.value(3))
-                for _ in range(batch.size):                  
-                    result_query = QtSql.QSqlQuery()
-                    result_query.prepare("""INSERT INTO Results(value, standard_id, batch_id, unit_id)
-                                   VALUES(:value, :standard_id, :batch_id, :unit_id)""")
-
-                    result_value = round(gauss(round(mean([standard.min_value, standard.max_value]), 4),
-                                               round(standard.max_value - standard.min_value, 4) / 4), 4)
-                    result_query.bindValue(':value', result_value)
-                    result_query.bindValue(':standard_id', standard.id)
-                    result_query.bindValue(':batch_id', batch.id)
-                    result_query.bindValue(':unit_id', standard.unit_id)
-
-                    if not (result_query.exec_()):
-                        QtWidgets.QMessageBox.warning(self, 'Ошибка!',
-                                                      'Произошла неизвестная ошибка, попробуйте снова')
+            self.batch.id = query.value(0)
 
         self.accept()
+
+    def get_batch(self):
+        return self.batch
 
 
 class Login(QtWidgets.QDialog):
