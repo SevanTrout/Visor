@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets, QtCore, QtSql
 
 from Models.standard import Standard
 from connection import create_connection
-from views import StandardsTableWidget, CreateBatchDialog, Login
+from views import StandardsTableWidget, CreateBatchDialog, Login, BatchesListWidget
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -31,6 +31,9 @@ class MainWindow(QtWidgets.QMainWindow):
             edit_standards_action = settings.addAction("&Редактировать нормальные показатели")
             edit_standards_action.triggered.connect(self.edit_standards)
 
+            batches_list_action = settings.addAction("&Показать партии")
+            batches_list_action.triggered.connect(self.create_batches_list)
+
         if user.is_admin():
             admin = bar.addMenu("&Администрирование")
 
@@ -45,6 +48,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mdi_area.setTabsMovable(True)
         self.mdi_area.setTabsClosable(True)
         self.setCentralWidget(self.mdi_area)
+
+    def create_batches_list(self):
+        batches_title = 'Партии'
+
+        if batches_title not in list(map(lambda x: x.windowTitle(), self.mdi_area.subWindowList())):
+            sub2 = QtWidgets.QMdiSubWindow()
+
+            sub2.setWidget(BatchesListWidget())
+            sub2.setWindowTitle(batches_title)
+            sub2.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+            sub2.resize(1024, 600)
+            self.mdi_area.addSubWindow(sub2)
+            sub2.show()
 
     def create_user(self):
         print("User")
@@ -114,12 +130,12 @@ class MainWindow(QtWidgets.QMainWindow):
         return True
 
     def edit_standards(self):
-        edit_standart_title = "Редактировать нормальные показатели"
+        edit_standard_title = "Редактировать нормальные показатели"
 
-        if edit_standart_title not in list(map(lambda x: x.windowTitle(), self.mdi_area.subWindowList())):
+        if edit_standard_title not in list(map(lambda x: x.windowTitle(), self.mdi_area.subWindowList())):
             sub1 = QtWidgets.QMdiSubWindow()
 
-            sub1.setWindowTitle(edit_standart_title)
+            sub1.setWindowTitle(edit_standard_title)
             sub1.setWidget(StandardsTableWidget())
             sub1.setAttribute(QtCore.Qt.WA_DeleteOnClose)
             sub1.resize(1024, 600)

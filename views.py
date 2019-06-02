@@ -1,7 +1,9 @@
 import datetime
 from _md5 import md5
 
-from PyQt5 import QtWidgets, QtSql, QtCore
+import dateutil.parser
+from PyQt5 import QtWidgets, QtSql, QtCore, QtGui
+from PyQt5.QtGui import QStandardItem
 from PyQt5.QtWidgets import QVBoxLayout, QDialogButtonBox, QAbstractItemView, QGroupBox, QFormLayout, QLabel, \
     QHeaderView
 
@@ -33,6 +35,7 @@ class StandardsTableWidget(QtWidgets.QWidget):
 
         self.table.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+
 
 class AddRowDialog(QtWidgets.QDialog):
 
@@ -191,3 +194,53 @@ class Login(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.warning(self, 'Внимание!', 'Неверное имя пользователя или пароль!')
         else:
             QtWidgets.QMessageBox.warning(self, 'Ошибка!', 'Произошла неизвестная ошибка, попробуйте снова')
+
+
+class BatchesListWidget(QtWidgets.QListView):
+    def __init__(self, parent=None):
+        selected_checked_item = None
+
+        super(BatchesListWidget, self).__init__(parent)
+
+        self.lay = QtWidgets.QVBoxLayout(self)
+        self.list = QtWidgets.QListView()
+        self.lay.addWidget(self.list)
+
+        self.action_button = QtWidgets.QPushButton('', self)
+        self.action_button.clicked.connect(self.button_action)
+        self.lay.addWidget(self.action_button)
+
+        self.list.setWindowTitle('Example List')
+
+        self.model = QtGui.QStandardItemModel(self.list)
+        self.list.clicked.connect(self.item_clicked)
+
+        batches_query = QtSql.QSqlQuery()
+        batches = []
+
+        if batches_query.exec_("""SELECT * FROM Batches"""):
+            while batches_query.next():
+                batches.append(Batch(batch_id=batches_query.value(0),
+                                     created_at=dateutil.parser.parse(batches_query.value(1)),
+                                     size=batches_query.value(2),
+                                     is_checked=batches_query.value(3),
+                                     user_id=batches_query.value(4)))
+
+        for batch in batches:
+            batch_name = "Партия от {0} размером {1} патронов".format(batch.iso_created_at, batch.size)
+            item = QStandardItem(batch_name)
+
+            item.setCheckState(batch.is_checked)
+
+            self.model.appendRow(item)
+
+        self.list.setModel(self.model)
+
+    def button_action(self):
+        print(self.list.selectedIndexes())
+        pass
+
+    def item_clicked(self, item):
+        self.selected_checked_item = self.model.item(item.row(), 0).checkState() == 1
+        
+        self.action_button.setText('Показать отчёт' if self.selected_checked_item else 'Создать отчёт')

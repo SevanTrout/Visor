@@ -35,7 +35,7 @@ class Batch:
 
     @iso_created_at.getter
     def iso_created_at(self):
-        return datetime.isoformat(self._created_at, sep='Z', timespec='milliseconds')
+        return datetime.isoformat(self._created_at, sep='T', timespec='milliseconds')
 
     @id.getter
     def id(self):
