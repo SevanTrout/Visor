@@ -12,8 +12,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None, user=None):
         super(MainWindow, self).__init__(parent)
 
-        self.standard_edit_is_open = False
-
         self.user = user
 
         self.setWindowTitle("Visor. Сессия пользователя {0}".format(
@@ -116,18 +114,17 @@ class MainWindow(QtWidgets.QMainWindow):
         return True
 
     def edit_standards(self):
+        edit_standart_title = "Редактировать нормальные показатели"
 
-        if not self.standard_edit_is_open:
+        if edit_standart_title not in list(map(lambda x: x.windowTitle(), self.mdi_area.subWindowList())):
             sub1 = QtWidgets.QMdiSubWindow()
 
-            sub1.setWindowTitle("Редактировать нормальные показатели")
+            sub1.setWindowTitle(edit_standart_title)
             sub1.setWidget(StandardsTableWidget())
             sub1.setAttribute(QtCore.Qt.WA_DeleteOnClose)
             sub1.resize(1024, 600)
             self.mdi_area.addSubWindow(sub1)
             sub1.show()
-
-            self.standard_edit_is_open = True
 
 
 if __name__ == '__main__':

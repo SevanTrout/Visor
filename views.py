@@ -34,7 +34,6 @@ class StandardsTableWidget(QtWidgets.QWidget):
         self.table.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
-
 class AddRowDialog(QtWidgets.QDialog):
 
     def __init__(self, names, parent=None):
