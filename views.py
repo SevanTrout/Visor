@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QDialogButtonBox, QAbstractItemView, QG
 
 from Models.batch import Batch
 from Models.user import User
-from report_creater import ReportCreater
+from report_creator import ReportCreator
 
 
 class StandardsTableWidget(QtWidgets.QWidget):
@@ -240,7 +240,7 @@ class BatchesListWidget(QtWidgets.QListView):
 
     def button_action(self):
 
-        reporter = ReportCreater(self.batches[self.selected_item_index].id)
+        reporter = ReportCreator(self.batches[self.selected_item_index].id)
         reporter.create_report()
 
     def item_clicked(self, item):
