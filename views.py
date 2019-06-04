@@ -199,8 +199,8 @@ class Login(QtWidgets.QDialog):
 
 class BatchesListWidget(QtWidgets.QListView):
     def __init__(self, parent=None):
-        selected_checked_item = None
-        selected_item_index = None
+        self.selected_checked_item = None
+        self.selected_item_index = None
 
         super(BatchesListWidget, self).__init__(parent)
 
@@ -208,17 +208,54 @@ class BatchesListWidget(QtWidgets.QListView):
         self.list = QtWidgets.QListView()
         self.lay.addWidget(self.list)
 
-        self.action_button = QtWidgets.QPushButton('', self)
+        self.action_button = QtWidgets.QPushButton('(Выберете партию, чтобы увидеть возможные действия)', self)
         self.action_button.clicked.connect(self.button_action)
         self.lay.addWidget(self.action_button)
 
-        self.list.setWindowTitle('Example List')
+        self.update_button = QtWidgets.QPushButton('Обновить данные', self)
+        self.update_button.clicked.connect(self.get_batch_list)
+        self.lay.addWidget(self.update_button)
 
         self.model = QtGui.QStandardItemModel(self.list)
         self.list.clicked.connect(self.item_clicked)
 
         batches_query = QtSql.QSqlQuery()
         self.batches = []
+
+        self.get_batch_list()
+
+        # if batches_query.exec_("""SELECT * FROM Batches"""):
+        #     while batches_query.next():
+        #         self.batches.append(Batch(batch_id=batches_query.value(0),
+        #                                   created_at=dateutil.parser.parse(batches_query.value(1)),
+        #                                   size=batches_query.value(2),
+        #                                   is_checked=batches_query.value(3),
+        #                                   user_id=batches_query.value(4)))
+        #
+        # for batch in self.batches:
+        #     batch_name = "Партия от {0} размером {1} патронов".format(batch.iso_created_at, batch.size)
+        #     item = QStandardItem(batch_name)
+        #
+        #     item.setCheckState(batch.is_checked)
+        #
+        #     self.model.appendRow(item)
+        #
+        # self.list.setModel(self.model)
+
+    def button_action(self):
+
+        if self.selected_item_index is None:
+            return
+
+        if not self.selected_checked_item:
+            reporter = ReportCreator(self.batches[self.selected_item_index].id)
+            reporter.create_report()
+
+    def get_batch_list(self):
+        batches_query = QtSql.QSqlQuery()
+        self.batches = []
+
+        self.model.clear()
 
         if batches_query.exec_("""SELECT * FROM Batches"""):
             while batches_query.next():
@@ -236,12 +273,9 @@ class BatchesListWidget(QtWidgets.QListView):
 
             self.model.appendRow(item)
 
+            self.list.update()
+
         self.list.setModel(self.model)
-
-    def button_action(self):
-
-        reporter = ReportCreator(self.batches[self.selected_item_index].id)
-        reporter.create_report()
 
     def item_clicked(self, item):
         self.selected_item_index = item.row()

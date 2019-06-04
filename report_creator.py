@@ -83,6 +83,9 @@ class ReportCreator:
 
             print("Limit excess count: {0}".format(limit_excess_count))
 
+        batch_query = QtSql.QSqlQuery()
+        batch_query.exec_("""UPDATE Batches SET is_checked = TRUE WHERE id = {0}""".format(self._batch_id))
+
         self.draw_plots(result_dict)
 
     def draw_plots(self, result_dict):
@@ -110,7 +113,7 @@ class ReportCreator:
 
             self.draw_plot(standards_dict.get(key), results, x_index, y_index)
 
-        plt.savefig('test.png', bbox_inches='tight', pad_inches=0)
+        plt.savefig('Партия_{0}.png'.format(self._batch_id), bbox_inches='tight', pad_inches=0)
         plt.close(f)
 
     def draw_plot(self, standard=None, results=None, x_index=None, y_index=None):
