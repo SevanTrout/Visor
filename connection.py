@@ -15,6 +15,10 @@ def create_connection():
 
     query = QtSql.QSqlQuery()
 
+    query.exec_("""CREATE TABLE IF NOT EXISTS Deviations(
+                       id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                       name TEXT NOT NULL UNIQUE)""")
+
     query.exec_("""CREATE TABLE IF NOT EXISTS Roles(
                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                    name TEXT NOT NULL UNIQUE)""")
@@ -80,6 +84,14 @@ def create_connection():
                        report_id INTEGER NOT NUll,
                        FOREIGN KEY (recommendation_id) REFERENCES Recommendations (id),
                        FOREIGN KEY (report_id) REFERENCES Reports (id))""")
+
+    query.exec_("""CREATE TABLE IF NOT EXISTS Rules(
+                       deviation_id INTEGER NOT NULL,
+                       standard_id INTEGER NOT NULL,
+                       recommendation_id INTEGER NOT NULL,
+                       FOREIGN KEY (recommendation_id) REFERENCES Recommendations (id),
+                       FOREIGN KEY (standard_id) REFERENCES Standards (id),
+                       FOREIGN KEY (deviation_id) REFERENCES Deviations (id))""")
 
     query.exec_("""INSERT INTO Roles(id,name) 
                    SELECT 1, 'Администратор' 

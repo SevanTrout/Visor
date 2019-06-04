@@ -249,7 +249,8 @@ class BatchesListWidget(QtWidgets.QListView):
 
         if not self.selected_checked_item:
             reporter = ReportCreator(self.batches[self.selected_item_index].id)
-            reporter.create_report()
+            if reporter.create_report():
+                self.get_batch_list()
 
     def get_batch_list(self):
         batches_query = QtSql.QSqlQuery()

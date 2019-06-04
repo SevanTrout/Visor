@@ -4,7 +4,36 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PyQt5 import QtSql
 
+from Models.deviation import Deviation
 from Models.standard import Standard
+
+
+def get_recommendations(deviations=None):
+    if deviations is None:
+        return
+
+    recommendations = set()
+
+    for key, value in deviations.items():
+        rules_query = QtSql.QSqlQuery()
+        rules_query.prepare("SELECT deviation_id, recommendation_id FROM Rules WHERE standard_id = :standard_id")
+        rules_query.bindValue(':standard_id', key)
+
+        if rules_query.exec_():
+            while rules_query.next():
+                for deviation in value:
+                    if deviation.id == rules_query.value('deviation_id') and deviation.value:
+                        recommendations.add(rules_query.value('recommendation_id'))
+
+    recommendations_query = QtSql.QSqlQuery()
+    recommendations_query.exec_("""SELECT description FROM Recommendations WHERE id IN ({0})"""
+                                .format(", ".join(map(str, recommendations))))
+
+    recommendations_description = []
+    while recommendations_query.next():
+        recommendations_description.append(recommendations_query.value(0))
+
+    print(list(recommendations_description))
 
 
 class ReportCreator:
@@ -24,6 +53,15 @@ class ReportCreator:
                 result_dict[query.value('standard_id')] = [query.value('value')]
             else:
                 result_dict[query.value('standard_id')].append(query.value('value'))
+
+        deviations_dict = {}
+
+        deviation_query = QtSql.QSqlQuery()
+        deviation_query.exec_("""SELECT * FROM Deviations""")
+        while deviation_query.next():
+            deviations_dict[deviation_query.value('id')] = deviation_query.value('name')
+
+        deviations = {}
 
         for key in result_dict.keys():
             standard_query = QtSql.QSqlQuery()
@@ -83,10 +121,21 @@ class ReportCreator:
 
             print("Limit excess count: {0}".format(limit_excess_count))
 
+            deviations[key] = [
+                Deviation(deviation_id=1, name=deviations_dict[1], value=limit_excess_count >= 5),
+                Deviation(deviation_id=2, name=deviations_dict[2], value=upper_series_length > 5),
+                Deviation(deviation_id=3, name=deviations_dict[3], value=lower_series_length > 5),
+                Deviation(deviation_id=4, name=deviations_dict[4], value=has_upper_trend),
+                Deviation(deviation_id=5, name=deviations_dict[5], value=has_lower_trend)
+            ]
+
+        get_recommendations(deviations)
+
         batch_query = QtSql.QSqlQuery()
         batch_query.exec_("""UPDATE Batches SET is_checked = TRUE WHERE id = {0}""".format(self._batch_id))
 
         self.draw_plots(result_dict)
+        return True
 
     def draw_plots(self, result_dict):
         standards_query = QtSql.QSqlQuery()
@@ -114,7 +163,7 @@ class ReportCreator:
             self.draw_plot(standards_dict.get(key), results, x_index, y_index)
 
         plt.savefig('Партия_{0}.png'.format(self._batch_id), bbox_inches='tight', pad_inches=0)
-        plt.close(f)
+        plt.close('all')
 
     def draw_plot(self, standard=None, results=None, x_index=None, y_index=None):
         average_value = round(mean([standard.min_value, standard.max_value]), 4)

@@ -22,8 +22,8 @@ class MainWindow(QtWidgets.QMainWindow):
         create_batch_action = conveyor.addAction("&Создать партию")
         create_batch_action.triggered.connect(self.create_batch)
 
-        load_data_action = conveyor.addAction("&Загрузить данные")
-        load_data_action.triggered.connect(self.load_data)
+        batches_list_action = conveyor.addAction("&Показать партии")
+        batches_list_action.triggered.connect(self.create_batches_list)
 
         if user.is_operator():
             settings = bar.addMenu("&Настройки")
@@ -31,14 +31,11 @@ class MainWindow(QtWidgets.QMainWindow):
             edit_standards_action = settings.addAction("&Редактировать нормальные показатели")
             edit_standards_action.triggered.connect(self.edit_standards)
 
-            batches_list_action = settings.addAction("&Показать партии")
-            batches_list_action.triggered.connect(self.create_batches_list)
-
         if user.is_admin():
             admin = bar.addMenu("&Администрирование")
 
-            create_user_action = admin.addAction("&Добавить пользователя")
-            create_user_action.triggered.connect(self.create_user)
+            # create_user_action = admin.addAction("&Добавить пользователя")
+            # create_user_action.triggered.connect(self.create_user)
 
         self.progressBar = QtWidgets.QProgressBar()
         self.statusBar().addPermanentWidget(self.progressBar)
