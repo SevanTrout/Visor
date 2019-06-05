@@ -13,6 +13,9 @@ def create_connection():
                                        "Click Cancel to exit.", QtWidgets.QMessageBox.Cancel)
         return False
 
+    sql = "PRAGMA foreign_keys = ON"
+    db.exec_(sql)
+
     query = QtSql.QSqlQuery()
 
     query.exec_("""CREATE TABLE IF NOT EXISTS Deviations(
@@ -66,7 +69,7 @@ def create_connection():
                    batch_id INTEGER NOT NULL,
                    unit_id INTEGER NOT NULL,
                    FOREIGN KEY (standard_id) REFERENCES Standards (id),
-                   FOREIGN KEY (batch_id) REFERENCES Batches (id))""")
+                   FOREIGN KEY (batch_id) REFERENCES Batches (id) ON DELETE CASCADE )""")
 
     query.exec_("""CREATE TABLE IF NOT EXISTS Recommendations(
                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NUll,
@@ -77,13 +80,13 @@ def create_connection():
                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NUll,
                        result TEXT NOT NULL,
                        batch_id INTEGER NOT NULL,
-                       FOREIGN KEY (batch_id) REFERENCES Batches (id))""")
+                       FOREIGN KEY (batch_id) REFERENCES Batches (id) ON DELETE CASCADE)""")
 
     query.exec_("""CREATE TABLE IF NOT EXISTS ReportsToRecommendations(
                        recommendation_id INTEGER NOT NUll,
                        report_id INTEGER NOT NUll,
                        FOREIGN KEY (recommendation_id) REFERENCES Recommendations (id),
-                       FOREIGN KEY (report_id) REFERENCES Reports (id))""")
+                       FOREIGN KEY (report_id) REFERENCES Reports (id) ON DELETE CASCADE)""")
 
     query.exec_("""CREATE TABLE IF NOT EXISTS Rules(
                        deviation_id INTEGER NOT NULL,
