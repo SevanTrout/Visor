@@ -52,18 +52,18 @@ class MainWindow(QtWidgets.QMainWindow):
         if batches_title not in list(map(lambda x: x.windowTitle(), self.mdi_area.subWindowList())):
             sub2 = QtWidgets.QMdiSubWindow()
 
-            sub2.setWidget(BatchesListWidget(progress_bar=self.progress_bar, is_admin=self.user.is_admin))
+            self.batches_list = BatchesListWidget(progress_bar=self.progress_bar, is_admin=self.user.is_admin)
+            self.batches_list.show_report_signal.connect(self.show_report)
+
+            sub2.setWidget(self.batches_list)
             sub2.setWindowTitle(batches_title)
             sub2.setAttribute(QtCore.Qt.WA_DeleteOnClose)
             sub2.resize(1024, 600)
             self.mdi_area.addSubWindow(sub2)
             sub2.show()
 
-    def create_user(self):
-        print("User")
-
-    def load_data(self):
-        print("Load")
+    def show_report(self, batch_id):
+        print(batch_id)
 
     def create_batch(self):
         create_batch = CreateBatchDialog(user=self.user)
@@ -98,7 +98,7 @@ class MainWindow(QtWidgets.QMainWindow):
         value_separator = ', '
 
         for index, standard in enumerate(standards):
-            result_query_pattern = """INSERT INTO Results(value, standard_id, unit_id, batch_id) VALUES """
+            result_query_pattern = 'INSERT INTO Results(value, standard_id, unit_id, batch_id) VALUES '
 
             standard_id = standard.id
             unit_id = standard.unit_id

@@ -198,7 +198,10 @@ class CreateBatchDialog(QtWidgets.QDialog):
 
 
 class BatchesListWidget(QtWidgets.QListView):
+    show_report_signal = QtCore.pyqtSignal(int)
+
     def __init__(self, parent=None, progress_bar=None, is_admin=None):
+
         self._progress_bar = progress_bar
         self._is_admin = is_admin
 
@@ -219,7 +222,7 @@ class BatchesListWidget(QtWidgets.QListView):
         self.update_button.clicked.connect(self.get_batch_list)
         self.lay.addWidget(self.update_button)
 
-        if (self._is_admin):
+        if self._is_admin:
             self.delete_button = QtWidgets.QPushButton('Удалить выбранную партию', self)
             self.delete_button.clicked.connect(self.delete_batch)
             self.lay.addWidget(self.delete_button)
@@ -236,10 +239,16 @@ class BatchesListWidget(QtWidgets.QListView):
         if self.selected_item_index is None:
             return
 
+        batch_id = self.batches[self.selected_item_index].id
         if not self.selected_checked_item:
-            reporter = ReportCreator(self.batches[self.selected_item_index].id, progress_bar=self._progress_bar)
+            reporter = ReportCreator(batch_id=batch_id, progress_bar=self._progress_bar)
             if reporter.create_report():
                 self.get_batch_list()
+
+            self.list.clearSelection()
+            self.action_button.setText('(Выберете партию, чтобы увидеть возможные действия)')
+        else:
+            self.show_report_signal.emit(batch_id)
 
     def get_batch_list(self):
         batches_query = QtSql.QSqlQuery()
