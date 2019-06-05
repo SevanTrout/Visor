@@ -198,7 +198,9 @@ class Login(QtWidgets.QDialog):
 
 
 class BatchesListWidget(QtWidgets.QListView):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, progress_bar=None):
+        self._progress_bar = progress_bar
+
         self.selected_checked_item = None
         self.selected_item_index = None
 
@@ -219,28 +221,9 @@ class BatchesListWidget(QtWidgets.QListView):
         self.model = QtGui.QStandardItemModel(self.list)
         self.list.clicked.connect(self.item_clicked)
 
-        batches_query = QtSql.QSqlQuery()
         self.batches = []
 
         self.get_batch_list()
-
-        # if batches_query.exec_("""SELECT * FROM Batches"""):
-        #     while batches_query.next():
-        #         self.batches.append(Batch(batch_id=batches_query.value(0),
-        #                                   created_at=dateutil.parser.parse(batches_query.value(1)),
-        #                                   size=batches_query.value(2),
-        #                                   is_checked=batches_query.value(3),
-        #                                   user_id=batches_query.value(4)))
-        #
-        # for batch in self.batches:
-        #     batch_name = "Партия от {0} размером {1} патронов".format(batch.iso_created_at, batch.size)
-        #     item = QStandardItem(batch_name)
-        #
-        #     item.setCheckState(batch.is_checked)
-        #
-        #     self.model.appendRow(item)
-        #
-        # self.list.setModel(self.model)
 
     def button_action(self):
 
@@ -248,7 +231,7 @@ class BatchesListWidget(QtWidgets.QListView):
             return
 
         if not self.selected_checked_item:
-            reporter = ReportCreator(self.batches[self.selected_item_index].id)
+            reporter = ReportCreator(self.batches[self.selected_item_index].id, progress_bar=self._progress_bar)
             if reporter.create_report():
                 self.get_batch_list()
 

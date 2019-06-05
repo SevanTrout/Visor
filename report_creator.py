@@ -3,6 +3,7 @@ from statistics import mean
 import matplotlib.pyplot as plt
 import numpy as np
 from PyQt5 import QtSql
+from PyQt5.QtWidgets import QProgressBar
 
 from Models.deviation import Deviation
 from Models.report import Report
@@ -31,11 +32,13 @@ def get_recommendations(deviations=None):
 
 class ReportCreator:
 
-    def __init__(self, batch_id=None):
+    def __init__(self, batch_id=None, progress_bar=None):
         self._batch_id = batch_id
+        self._progress_bar: QProgressBar = progress_bar
         self.axarr = None
 
     def create_report(self):
+        self._progress_bar.reset()
         query = QtSql.QSqlQuery()
 
         result_dict = {}
@@ -46,6 +49,7 @@ class ReportCreator:
                 result_dict[query.value('standard_id')] = [query.value('value')]
             else:
                 result_dict[query.value('standard_id')].append(query.value('value'))
+        self._progress_bar.setValue(10)
 
         deviations_dict = {}
 
@@ -102,18 +106,6 @@ class ReportCreator:
             limit_excess_count = len(list(filter(lambda x: x > current_max_value or x < current_min_value,
                                                  current_results)))
 
-            print('Standard number {0}'.format(key))
-
-            print('Lower at {0}: {1}, Upper at {2}: {3}'.format(lower_trend_index,
-                                                                has_lower_trend,
-                                                                upper_trend_index,
-                                                                has_upper_trend))
-
-            print('Upper series length: {0}. Lower series length: {1}'.format(upper_series_length,
-                                                                              lower_series_length))
-
-            print("Limit excess count: {0}".format(limit_excess_count))
-
             deviations[key] = [
                 Deviation(deviation_id=1, name=deviations_dict[1], value=limit_excess_count >= 5),
                 Deviation(deviation_id=2, name=deviations_dict[2], value=upper_series_length > 5),
@@ -122,14 +114,18 @@ class ReportCreator:
                 Deviation(deviation_id=5, name=deviations_dict[5], value=has_lower_trend)
             ]
 
+        self._progress_bar.setValue(75)
+
         recommendations = get_recommendations(deviations)
 
         self.create_report_db(recommendations)
+        self._progress_bar.setValue(95)
 
         batch_query = QtSql.QSqlQuery()
         batch_query.exec_("""UPDATE Batches SET is_checked = TRUE WHERE id = {0}""".format(self._batch_id))
 
         self.draw_plots(result_dict)
+        self._progress_bar.reset()
         return True
 
     def draw_plots(self, result_dict):

@@ -37,8 +37,8 @@ class MainWindow(QtWidgets.QMainWindow):
             # create_user_action = admin.addAction("&Добавить пользователя")
             # create_user_action.triggered.connect(self.create_user)
 
-        self.progressBar = QtWidgets.QProgressBar()
-        self.statusBar().addPermanentWidget(self.progressBar)
+        self.progress_bar = QtWidgets.QProgressBar()
+        self.statusBar().addPermanentWidget(self.progress_bar)
 
         self.mdi_area = QtWidgets.QMdiArea()
         self.mdi_area.setViewMode(QtWidgets.QMdiArea.TabbedView)
@@ -52,7 +52,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if batches_title not in list(map(lambda x: x.windowTitle(), self.mdi_area.subWindowList())):
             sub2 = QtWidgets.QMdiSubWindow()
 
-            sub2.setWidget(BatchesListWidget())
+            sub2.setWidget(BatchesListWidget(progress_bar=self.progress_bar))
             sub2.setWindowTitle(batches_title)
             sub2.setAttribute(QtCore.Qt.WA_DeleteOnClose)
             sub2.resize(1024, 600)
@@ -71,7 +71,7 @@ class MainWindow(QtWidgets.QMainWindow):
             batch = create_batch.get_batch()
 
             if self.create_results(batch):
-                self.progressBar.reset()
+                self.progress_bar.reset()
                 QtWidgets.QMessageBox.information(self, "Успех!", "Партия создана успешно")
 
     def create_results(self, batch):
@@ -115,7 +115,7 @@ class MainWindow(QtWidgets.QMainWindow):
                         batch_id)
                 )
 
-                self.progressBar.setValue((index + (i / batch_size)) * progress_bar_multiplier)
+                self.progress_bar.setValue((index + (i / batch_size)) * progress_bar_multiplier)
 
             result_query_pattern += value_separator.join(results)
 
