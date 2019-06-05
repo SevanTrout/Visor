@@ -5,6 +5,7 @@ import numpy as np
 from PyQt5 import QtSql
 
 from Models.deviation import Deviation
+from Models.report import Report
 from Models.standard import Standard
 
 
@@ -25,15 +26,7 @@ def get_recommendations(deviations=None):
                     if deviation.id == rules_query.value('deviation_id') and deviation.value:
                         recommendations.add(rules_query.value('recommendation_id'))
 
-    recommendations_query = QtSql.QSqlQuery()
-    recommendations_query.exec_("""SELECT description FROM Recommendations WHERE id IN ({0})"""
-                                .format(", ".join(map(str, recommendations))))
-
-    recommendations_description = []
-    while recommendations_query.next():
-        recommendations_description.append(recommendations_query.value(0))
-
-    print(list(recommendations_description))
+    return list(recommendations)
 
 
 class ReportCreator:
@@ -129,7 +122,9 @@ class ReportCreator:
                 Deviation(deviation_id=5, name=deviations_dict[5], value=has_lower_trend)
             ]
 
-        get_recommendations(deviations)
+        recommendations = get_recommendations(deviations)
+
+        self.create_report_db(recommendations)
 
         batch_query = QtSql.QSqlQuery()
         batch_query.exec_("""UPDATE Batches SET is_checked = TRUE WHERE id = {0}""".format(self._batch_id))
@@ -177,5 +172,30 @@ class ReportCreator:
         self.axarr[y_index, x_index].plot([1, results_length], [standard.max_value, standard.max_value], color='orange',
                                           linestyle='dashed')
         self.axarr[y_index, x_index].plot(func_range, np.array(results), color='blue', linestyle='solid', marker='.')
-        # self.axarr[y_index, x_index].axis([1, results_length, standard.min_value * 1.5, standard.max * 1.5])
         self.axarr[y_index, x_index].set_title(standard.name)
+
+    def create_report_db(self, recommendations=None):
+        report = Report(result=len(recommendations) == 0, batch_id=self._batch_id)
+
+        report_query = QtSql.QSqlQuery()
+        report_query.prepare("INSERT INTO Reports(result, batch_id) VALUES (:result, :batch_id)")
+        report_query.bindValue(":result", report.result)
+        report_query.bindValue(":batch_id", report.batch_id)
+
+        if report_query.exec_():
+            report_query.clear()
+
+            report_query.prepare("SELECT last_insert_rowid() FROM Reports")
+            if report_query.exec_():
+                report_query.first()
+                report.id = report_query.value(0)
+
+        if report.id:
+            recommendations_query = QtSql.QSqlQuery()
+            pairs = []
+            for recommendation in recommendations:
+                pairs.append("({0}, {1})".format(recommendation, report.id))
+
+            recommendations_query.exec_("""INSERT INTO ReportsToRecommendations(recommendation_id, report_id) 
+                                           VALUES {0}""".format(", ".join(pairs)))
+        return
