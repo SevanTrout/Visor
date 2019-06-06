@@ -4,6 +4,7 @@ from statistics import mean
 from PyQt5 import QtWidgets, QtCore, QtSql
 
 from Models.standard import Standard
+from Views.ReportWidget import ReportWidget
 from connection import create_connection
 from views import StandardsTableWidget, CreateBatchDialog, Login, BatchesListWidget
 
@@ -63,7 +64,14 @@ class MainWindow(QtWidgets.QMainWindow):
             sub2.show()
 
     def show_report(self, batch_id):
-        print(batch_id)
+        sub1 = QtWidgets.QMdiSubWindow()
+
+        sub1.setWindowTitle("Отчёт о партии {0}".format(batch_id))
+        sub1.setWidget(ReportWidget(batch_id=batch_id))
+        sub1.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        sub1.resize(1024, 600)
+        self.mdi_area.addSubWindow(sub1)
+        sub1.show()
 
     def create_batch(self):
         create_batch = CreateBatchDialog(user=self.user)
