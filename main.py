@@ -2,9 +2,10 @@ from random import gauss
 from statistics import mean
 
 from PyQt5 import QtWidgets, QtCore, QtSql
+from PyQt5.QtWidgets import QVBoxLayout
 
 from Models.standard import Standard
-from Views.ReportWidget import ReportWidget
+from Views.report_widget import ReportWidget
 from connection import create_connection
 from views import StandardsTableWidget, CreateBatchDialog, Login, BatchesListWidget
 
@@ -67,9 +68,15 @@ class MainWindow(QtWidgets.QMainWindow):
         sub1 = QtWidgets.QMdiSubWindow()
 
         sub1.setWindowTitle("Отчёт о партии {0}".format(batch_id))
-        sub1.setWidget(ReportWidget(batch_id=batch_id))
+
+        rw = ReportWidget(batch_id=batch_id)
+
+        scroller = QtWidgets.QScrollArea()
+        scroller.setWidget(rw)
+        scroller.setAlignment(QtCore.Qt.AlignJustify)
+        sub1.setWidget(scroller)
+
         sub1.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        sub1.resize(1024, 600)
         self.mdi_area.addSubWindow(sub1)
         sub1.show()
 
@@ -139,7 +146,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if edit_standard_title not in list(map(lambda x: x.windowTitle(), self.mdi_area.subWindowList())):
             sub1 = QtWidgets.QMdiSubWindow()
-
             sub1.setWindowTitle(edit_standard_title)
             sub1.setWidget(StandardsTableWidget())
             sub1.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -159,5 +165,5 @@ if __name__ == '__main__':
 
     if login_window.exec_() == QtWidgets.QDialog.Accepted:
         w = MainWindow(user=login_window.user)
-        w.show()
+        w.showMaximized()
         sys.exit(app.exec_())

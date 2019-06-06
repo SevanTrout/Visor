@@ -214,7 +214,7 @@ class BatchesListWidget(QtWidgets.QListView):
         self.list = QtWidgets.QListView()
         self.lay.addWidget(self.list)
 
-        self.action_button = QtWidgets.QPushButton('(Выберете партию, чтобы увидеть возможные действия)', self)
+        self.action_button = QtWidgets.QPushButton('(Выберите партию, чтобы увидеть возможные действия)', self)
         self.action_button.clicked.connect(self.button_action)
         self.lay.addWidget(self.action_button)
 

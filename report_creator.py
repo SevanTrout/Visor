@@ -125,7 +125,7 @@ class ReportCreator:
         return True
 
     def create_report_db(self, recommendations=None):
-        report = Report(result=len(recommendations) == 0, batch_id=self._batch_id)
+        report = Report(result=len(recommendations) != 0, batch_id=self._batch_id)
 
         report_query = QtSql.QSqlQuery()
         report_query.prepare("INSERT INTO Reports(result, batch_id) VALUES (:result, :batch_id)")

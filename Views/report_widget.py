@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PyQt5 import QtWidgets, QtSql, QtCore
 from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QApplication
 
 from Models.batch import Batch
 from Models.standard import Standard
@@ -13,6 +14,9 @@ from Models.standard import Standard
 class ReportWidget(QtWidgets.QWidget):
     def __init__(self, parent=None, batch_id=None):
         super(ReportWidget, self).__init__(parent)
+
+        rec = QApplication.activeWindow().width()
+        self.setFixedWidth(rec - 35)
 
         self._batch_id = batch_id
 
@@ -72,9 +76,7 @@ class ReportWidget(QtWidgets.QWidget):
         for stand_id in self.standard_dict.keys():
             h_lay = QtWidgets.QHBoxLayout(self)
 
-            pattern = "{0}: {1} ({2})".format(self.standard_dict[stand_id].name,
-                                              ' - '.join(map(str, self.results_dict[stand_id])),
-                                              self.standard_dict[stand_id].unit)
+            pattern = "{0}".format(self.standard_dict[stand_id].name)
             recommendation = QtWidgets.QLabel(pattern)
             h_lay.addWidget(recommendation, alignment=QtCore.Qt.AlignLeft)
 
@@ -88,11 +90,20 @@ class ReportWidget(QtWidgets.QWidget):
 
             self.lay.addLayout(h_lay)
 
+            data_pattern = "{0} ({1})".format(', '.join(map(str, self.results_dict[stand_id])),
+                                              self.standard_dict[stand_id].unit)
+            results_text = QtWidgets.QTextEdit()
+            results_text.setText(data_pattern)
+            results_text.setReadOnly(True)
+
+            self.lay.addWidget(results_text)
+
         report_query = QtSql.QSqlQuery()
         report_query.exec_("""SELECT id, result FROM Reports WHERE batch_id = {0}""".format(self._batch_id))
 
         report_query.first()
         if report_query.value(1) == '1':
+            # self.lay.addStretch()
             self.recommendations_title = QtWidgets.QLabel("Рекомендации:")
             self.recommendations_title.setFont(QFont("Times", 12, QFont.Bold))
 
@@ -109,7 +120,7 @@ class ReportWidget(QtWidgets.QWidget):
                 recommendation = QtWidgets.QLabel(pattern)
                 self.lay.addWidget(recommendation, alignment=QtCore.Qt.AlignLeft)
 
-        self.lay.addStretch()
+        # self.lay.addStretch()
 
     def draw_plot(self):
         index = int(self.sender().objectName())
