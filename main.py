@@ -56,7 +56,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if batches_title not in list(map(lambda x: x.windowTitle(), self.mdi_area.subWindowList())):
             batch_list_sub = QtWidgets.QMdiSubWindow()
 
-            self.batches_list = BatchesListWidget(progress_bar=self.progress_bar, is_admin=self.user.is_admin)
+            self.batches_list = BatchesListWidget(progress_bar=self.progress_bar, is_admin=self.user.is_admin())
             self.batches_list.show_report_signal.connect(self.show_report)
 
             batch_list_sub.setWidget(self.batches_list)
