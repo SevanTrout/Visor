@@ -35,11 +35,11 @@ class MainWindow(QtWidgets.QMainWindow):
             edit_standards_action = settings.addAction("&Редактировать нормальные показатели")
             edit_standards_action.triggered.connect(self.edit_standards)
 
-        if user.is_admin():
-            admin = bar.addMenu("&Администрирование")
-
-            # create_user_action = admin.addAction("&Добавить пользователя")
-            # create_user_action.triggered.connect(self.create_user)
+        # if user.is_admin():
+        #     admin = bar.addMenu("&Администрирование")
+        #
+        #     create_user_action = admin.addAction("&Добавить пользователя")
+        #     create_user_action.triggered.connect(self.create_user)
 
         self.progress_bar = QtWidgets.QProgressBar()
         self.statusBar().addPermanentWidget(self.progress_bar)
@@ -54,33 +54,32 @@ class MainWindow(QtWidgets.QMainWindow):
         batches_title = 'Партии'
 
         if batches_title not in list(map(lambda x: x.windowTitle(), self.mdi_area.subWindowList())):
-            sub2 = QtWidgets.QMdiSubWindow()
+            batch_list_sub = QtWidgets.QMdiSubWindow()
 
             self.batches_list = BatchesListWidget(progress_bar=self.progress_bar, is_admin=self.user.is_admin)
             self.batches_list.show_report_signal.connect(self.show_report)
 
-            sub2.setWidget(self.batches_list)
-            sub2.setWindowTitle(batches_title)
-            sub2.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-            sub2.resize(1024, 600)
-            self.mdi_area.addSubWindow(sub2)
-            sub2.show()
+            batch_list_sub.setWidget(self.batches_list)
+            batch_list_sub.setWindowTitle(batches_title)
+            batch_list_sub.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+            self.mdi_area.addSubWindow(batch_list_sub)
+            batch_list_sub.show()
 
     def show_report(self, batch_id):
-        sub1 = QtWidgets.QMdiSubWindow()
+        report_sub = QtWidgets.QMdiSubWindow()
 
-        sub1.setWindowTitle("Отчёт о партии {0}".format(batch_id))
+        report_sub.setWindowTitle("Отчёт о партии {0}".format(batch_id))
 
         rw = ReportWidget(batch_id=batch_id)
 
         scroller = QtWidgets.QScrollArea()
         scroller.setWidget(rw)
         scroller.setAlignment(QtCore.Qt.AlignJustify)
-        sub1.setWidget(scroller)
+        report_sub.setWidget(scroller)
 
-        sub1.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.mdi_area.addSubWindow(sub1)
-        sub1.show()
+        report_sub.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.mdi_area.addSubWindow(report_sub)
+        report_sub.show()
 
     def create_batch(self):
         create_batch = CreateBatchDialog(user=self.user)
@@ -147,13 +146,12 @@ class MainWindow(QtWidgets.QMainWindow):
         edit_standard_title = "Редактировать нормальные показатели"
 
         if edit_standard_title not in list(map(lambda x: x.windowTitle(), self.mdi_area.subWindowList())):
-            sub1 = QtWidgets.QMdiSubWindow()
-            sub1.setWindowTitle(edit_standard_title)
-            sub1.setWidget(StandardsTableWidget())
-            sub1.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-            sub1.resize(1024, 600)
-            self.mdi_area.addSubWindow(sub1)
-            sub1.show()
+            standards_sub = QtWidgets.QMdiSubWindow()
+            standards_sub.setWindowTitle(edit_standard_title)
+            standards_sub.setWidget(StandardsTableWidget())
+            standards_sub.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+            self.mdi_area.addSubWindow(standards_sub)
+            standards_sub.show()
 
 
 if __name__ == '__main__':

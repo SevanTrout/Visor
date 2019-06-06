@@ -93,6 +93,7 @@ class ReportWidget(QtWidgets.QWidget):
             data_pattern = "{0} ({1})".format(', '.join(map(str, self.results_dict[stand_id])),
                                               self.standard_dict[stand_id].unit)
             results_text = QtWidgets.QTextEdit()
+            results_text.setFixedHeight(50)
             results_text.setText(data_pattern)
             results_text.setReadOnly(True)
 
@@ -103,7 +104,6 @@ class ReportWidget(QtWidgets.QWidget):
 
         report_query.first()
         if report_query.value(1) == '1':
-            # self.lay.addStretch()
             self.recommendations_title = QtWidgets.QLabel("Рекомендации:")
             self.recommendations_title.setFont(QFont("Times", 12, QFont.Bold))
 
@@ -119,8 +119,6 @@ class ReportWidget(QtWidgets.QWidget):
                 pattern = "{0}".format(rec_query.value(0))
                 recommendation = QtWidgets.QLabel(pattern)
                 self.lay.addWidget(recommendation, alignment=QtCore.Qt.AlignLeft)
-
-        # self.lay.addStretch()
 
     def draw_plot(self):
         index = int(self.sender().objectName())
