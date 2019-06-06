@@ -2,12 +2,14 @@ from random import gauss
 from statistics import mean
 
 from PyQt5 import QtWidgets, QtCore, QtSql
-from PyQt5.QtWidgets import QVBoxLayout
 
 from Models.standard import Standard
+from Views.batches_list_widget import BatchesListWidget
+from Views.create_batch_dialog import CreateBatchDialog
+from Views.login_widget import LoginWidget
 from Views.report_widget import ReportWidget
+from Views.standards_table_widget import StandardsTableWidget
 from connection import create_connection
-from views import StandardsTableWidget, CreateBatchDialog, Login, BatchesListWidget
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -161,7 +163,7 @@ if __name__ == '__main__':
     if not create_connection():
         sys.exit(-1)
 
-    login_window = Login()
+    login_window = LoginWidget()
 
     if login_window.exec_() == QtWidgets.QDialog.Accepted:
         w = MainWindow(user=login_window.user)
