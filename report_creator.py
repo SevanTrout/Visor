@@ -1,13 +1,10 @@
 from statistics import mean
 
-import matplotlib.pyplot as plt
-import numpy as np
 from PyQt5 import QtSql
 from PyQt5.QtWidgets import QProgressBar
 
 from Models.deviation import Deviation
 from Models.report import Report
-from Models.standard import Standard
 
 
 def get_recommendations(deviations=None):
@@ -124,51 +121,8 @@ class ReportCreator:
         batch_query = QtSql.QSqlQuery()
         batch_query.exec_("""UPDATE Batches SET is_checked = TRUE WHERE id = {0}""".format(self._batch_id))
 
-        self.draw_plots(result_dict)
         self._progress_bar.reset()
         return True
-
-    def draw_plots(self, result_dict):
-        standards_query = QtSql.QSqlQuery()
-        standards_query.exec_("""SELECT Standards.id, Standards.name, min_value, max_value, Units.short_name As unit 
-                                 FROM Standards INNER JOIN Units on Standards.unit_id = Units.id 
-                                 WHERE Standards.id in ({0})""".format(', '.join(map(str, result_dict.keys()))))
-
-        standards_dict = {}
-        while standards_query.next():
-            standards_dict[standards_query.value('id')] = Standard(standard_id=standards_query.value('id'),
-                                                                   name=standards_query.value('name'),
-                                                                   min_value=standards_query.value('min_value'),
-                                                                   max_value=standards_query.value('max_value'),
-                                                                   unit=standards_query.value('unit'))
-
-        plt.close('all')
-
-        row_count = round(len(standards_dict) / 2)
-        f, self.axarr = plt.subplots(row_count, 2, figsize=(30, 20))
-
-        for key, results in result_dict.items():
-            y_index = (key - 1) // 2
-            x_index = (key - 1) % 2
-
-            self.draw_plot(standards_dict.get(key), results, x_index, y_index)
-
-        plt.savefig('Партия_{0}.png'.format(self._batch_id), bbox_inches='tight', pad_inches=0)
-        plt.close('all')
-
-    def draw_plot(self, standard=None, results=None, x_index=None, y_index=None):
-        average_value = round(mean([standard.min_value, standard.max_value]), 4)
-
-        results_length = len(results)
-        func_range = np.array(range(1, results_length + 1))
-
-        self.axarr[y_index, x_index].plot([1, results_length], [standard.min_value, standard.min_value], color='orange',
-                                          linestyle='dashed')
-        self.axarr[y_index, x_index].plot([1, results_length], [average_value, average_value], 'g--')
-        self.axarr[y_index, x_index].plot([1, results_length], [standard.max_value, standard.max_value], color='orange',
-                                          linestyle='dashed')
-        self.axarr[y_index, x_index].plot(func_range, np.array(results), color='blue', linestyle='solid', marker='.')
-        self.axarr[y_index, x_index].set_title(standard.name)
 
     def create_report_db(self, recommendations=None):
         report = Report(result=len(recommendations) == 0, batch_id=self._batch_id)

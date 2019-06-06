@@ -246,7 +246,7 @@ class BatchesListWidget(QtWidgets.QListView):
                 self.get_batch_list()
 
             self.list.clearSelection()
-            self.action_button.setText('(Выберете партию, чтобы увидеть возможные действия)')
+            self.action_button.setText('(Выберите партию, чтобы увидеть возможные действия)')
         else:
             self.show_report_signal.emit(batch_id)
 
