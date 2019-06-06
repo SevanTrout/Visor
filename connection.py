@@ -34,13 +34,6 @@ def create_connection():
                    role_id INTEGER NOT NULL,
                    FOREIGN KEY (role_id) REFERENCES Roles (id))""")
 
-    query.exec_("""CREATE TABLE IF NOT EXISTS Logs(
-                   id BLOB PRIMARY KEY NOT NULL,
-                   created_at DATETIME NOT NULL,
-                   type INTEGER NOT NULL,
-                   user_id BLOB NOT NULL,
-                   FOREIGN KEY (user_id) REFERENCES Users (id))""")
-
     query.exec_("""CREATE TABLE IF NOT EXISTS Units(
                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                    name TEXT NOT NULL,

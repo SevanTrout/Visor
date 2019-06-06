@@ -44,7 +44,7 @@ class ReportWidget(QtWidgets.QWidget):
         self.lay.addWidget(self.title, alignment=QtCore.Qt.AlignTop)
 
         self.subtitle = QtWidgets.QLabel("Показатели:")
-        self.subtitle.setFont(QFont("Times", 12, QFont.Bold))
+        self.subtitle.setFont(QFont("Times", 14, QFont.Bold))
         self.lay.addWidget(self.subtitle, alignment=QtCore.Qt.AlignTop)
 
         self.results_dict = {}
@@ -77,8 +77,9 @@ class ReportWidget(QtWidgets.QWidget):
             h_lay = QtWidgets.QHBoxLayout(self)
 
             pattern = "{0}".format(self.standard_dict[stand_id].name)
-            recommendation = QtWidgets.QLabel(pattern)
-            h_lay.addWidget(recommendation, alignment=QtCore.Qt.AlignLeft)
+            result = QtWidgets.QLabel(pattern)
+            result.setFont(QFont("Times", 12))
+            h_lay.addWidget(result, alignment=QtCore.Qt.AlignLeft)
 
             button = QtWidgets.QPushButton('-|-')
             button.setMaximumWidth(50)
@@ -93,7 +94,8 @@ class ReportWidget(QtWidgets.QWidget):
             data_pattern = "{0} ({1})".format(', '.join(map(str, self.results_dict[stand_id])),
                                               self.standard_dict[stand_id].unit)
             results_text = QtWidgets.QTextEdit()
-            results_text.setFixedHeight(50)
+            results_text.setFont(QFont("Times", 9))
+            results_text.setFixedHeight(70)
             results_text.setText(data_pattern)
             results_text.setReadOnly(True)
 
@@ -105,7 +107,7 @@ class ReportWidget(QtWidgets.QWidget):
         report_query.first()
         if report_query.value(1) == '1':
             self.recommendations_title = QtWidgets.QLabel("Рекомендации:")
-            self.recommendations_title.setFont(QFont("Times", 12, QFont.Bold))
+            self.recommendations_title.setFont(QFont("Times", 14, QFont.Bold))
 
             self.lay.addWidget(self.recommendations_title, alignment=QtCore.Qt.AlignTop)
 
@@ -118,6 +120,7 @@ class ReportWidget(QtWidgets.QWidget):
             while rec_query.next():
                 pattern = "{0}".format(rec_query.value(0))
                 recommendation = QtWidgets.QLabel(pattern)
+                recommendation.setFont(QFont("Times", 10))
                 self.lay.addWidget(recommendation, alignment=QtCore.Qt.AlignLeft)
 
     def draw_plot(self):
